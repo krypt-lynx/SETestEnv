@@ -11,16 +11,16 @@ using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
 using VRageMath;
-using Console_2;
+using BufferizedConsole;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using Sandbox.Common.ObjectBuilders;
 
 namespace SETestEnv
 {
 
-    public class TestTimerBlock : TestFunctionalBlock<MyObjectBuilder_TimerBlock>, IMyTimerBlock
+    public class TestTimerBlock : TestFunctionalBlock, IMyTimerBlock
     {
-        public TestTimerBlock(string subtype = "TestTimerBlock") : base(subtype) { }
+        public TestTimerBlock(string subtype = null) : base(subtype) { }
 
         public bool IsCountingDown
         {

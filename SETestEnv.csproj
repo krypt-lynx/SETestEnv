@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SETestEnv</RootNamespace>
-    <AssemblyName>SimulatedEnvironment</AssemblyName>
+    <AssemblyName>SETestEnv</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -68,8 +68,15 @@
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\SEPBDiagnostics\packages\Lib.Harmony.2.2.2\lib\net48\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="Sandbox.Common">
       <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
     </Reference>
@@ -105,14 +112,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\Base\Actions\Action.cs" />
+    <Compile Include="Blocks\Base\Properties\Property.cs" />
     <Compile Include="Blocks\Base\TestCubeBlock.cs" />
     <Compile Include="Blocks\Base\TestFunctionalBlock.cs" />
+    <Compile Include="Blocks\Guns\TestLargeTurretBase.cs" />
     <Compile Include="Blocks\Base\TestSlimBlock.cs" />
+    <Compile Include="Blocks\Guns\TestLargeInteriorTurret.cs" />
     <Compile Include="Blocks\Surface\TestTextSurface.cs" />
     <Compile Include="Blocks\Surface\TestTextSurfaceProvider.cs" />
-    <Compile Include="Blocks\TestUserControllableGun.cs" />
-    <Compile Include="Console2.cs" />
-    <Compile Include="NativeConsole.cs" />
+    <Compile Include="Blocks\Guns\TestUserControllableGun.cs" />
+    <Compile Include="ProgramLayer.cs" />
+    <Compile Include="Helpers\BufferizedConsole.cs" />
+    <Compile Include="Grid\TestBlockGroup.cs" />
+    <Compile Include="Grid\TestCubeGrid.cs" />
+    <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\NativeConsole.cs" />
+    <Compile Include="ProgramEnv\TestGridProgramRuntimeInfo.cs" />
+    <Compile Include="ProgramEnv\TestGridTerminalSystem.cs" />
+    <Compile Include="ProgramEnv\TestIntergridCommunicationSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Blocks\TestBatteryBlock.cs" />
     <Compile Include="Blocks\TestProgrammableBlock.cs" />
@@ -120,7 +138,12 @@
     <Compile Include="Blocks\TestTimerBlock.cs" />
     <Compile Include="Blocks\Base\TestTerminalBlock.cs" />
     <Compile Include="Blocks\Base\TestEntity.cs" />
-    <Compile Include="TestEnv.cs" />
+    <Compile Include="Simulation\ISimulationElement.cs" />
+    <Compile Include="TestGridProgram.cs" />
+    <Compile Include="Universe.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

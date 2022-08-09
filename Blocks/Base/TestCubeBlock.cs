@@ -1,4 +1,5 @@
-﻿using Sandbox.ModAPI.Ingame;
+﻿using Sandbox.Common.ObjectBuilders;
+using Sandbox.ModAPI.Ingame;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +12,64 @@ using VRageMath;
 
 namespace SETestEnv
 {
-    public class TestCubeBlock<T> : TestEntity, IMyCubeBlock where T : MyObjectBuilder_Base
+    public class TestCubeBlock : TestEntity, IMyCubeBlock
     {
-        public TestCubeBlock(string subtypeName)
+        public TestCubeBlock(string subtypeName = null)
         {
-            BlockDefinition = new SerializableDefinitionId(typeof(T), subtypeName);
+            var type = GetObjectBuilderTypeInternal();
+
+            BlockDefinition = new SerializableDefinitionId(type, subtypeName);
         }
+
+        static Dictionary<Type, Type> builderTypes = new Dictionary<Type, Type>();
+        private Type GetObjectBuilderTypeInternal()
+        {
+            var blockType = GetType();
+            if (!builderTypes.TryGetValue(blockType, out var builderType))
+            {
+                builderType = GetObjectBuilderType();
+                if (builderType == null)
+                {
+                    throw new Exception($"Definition type is null for {GetType().FullName}");
+                }
+                builderTypes[blockType] = builderType;
+            }
+            return builderType;
+        }
+
+        protected Type ResolveObjectBuilderType()
+        {
+            // general rule Keen's naming rule for object builders:
+            // For IMy<Something> interfaces and My<Something> block you have 
+            // MyObjectBuilder_<Something> builder in Sandbox.Common.ObjectBuilders namespace
+
+            // But sometimes KeenSWH do not follow its own rules:
+            // MyLargeInteriorTurret - MyObjectBuilder_InteriorTurret
+            // IMyProgrammableBlock - MyObjectBuilder_MyProgrammableBlock
+
+            // In such case you can override GetObjectBuilderType method and return proper MyObjectBuilder_Base type directly
+
+            // ... or you don't used "Test" prefix for your class
+
+            Type obType = null;
+
+            try
+            {
+                if (GetType().Name.StartsWith("Test"))
+                {
+                    var objectBuilders = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name == "SpaceEngineers.ObjectBuilders").FirstOrDefault();
+
+                    var obTypeName = "Sandbox.Common.ObjectBuilders.MyObjectBuilder_" + GetType().Name.Substring(4);
+
+                    obType = objectBuilders.GetType(obTypeName);
+                }
+            }
+            catch { }
+
+            return obType;
+        }
+
+        public virtual Type GetObjectBuilderType() => ResolveObjectBuilderType();
 
         public TestCubeGrid OwnerGrid { get; set; }
 
@@ -24,15 +77,9 @@ namespace SETestEnv
 
         public IMyCubeGrid CubeGrid => OwnerGrid;
 
-        public float BuildIntegrity { get; set; }
+        public virtual bool IsFunctional => true;
 
-        public float CurrentDamage { get; set; }
-
-        public float MaxIntegrity { get; set; }
-
-        public bool IsFunctional => (BuildIntegrity - CurrentDamage) / MaxIntegrity > 0.5;
-
-        public bool IsWorking { get; set; }
+        public virtual bool IsWorking => IsFunctional;
 
         public int NumberInGrid => OwnerGrid.Blocks.IndexOf((IMyTerminalBlock)this);
 
@@ -40,16 +87,10 @@ namespace SETestEnv
 
         public long OwnerId => 0; // Unowned
 
-        public Vector3I Position
-        {
-            get
-            {
-                return new Vector3I(OwnerGrid.Blocks.IndexOf((IMyTerminalBlock)this), 0, 0);
-            }
-        }
+        public Vector3I Position => new Vector3I(OwnerGrid.Blocks.IndexOf((IMyTerminalBlock)this), 0, 0);
 
 
-        public string DefinitionDisplayNameText => throw new NotImplementedException();
+        public string DefinitionDisplayNameText => GetType().Name;
 
         public float DisassembleRatio => throw new NotImplementedException();
 
@@ -57,7 +98,7 @@ namespace SETestEnv
 
         public Vector3I Max => throw new NotImplementedException();
 
-        public float Mass => throw new NotImplementedException();
+        public float Mass => 0;
 
         public Vector3I Min => throw new NotImplementedException();
 

@@ -14,7 +14,7 @@ using VRageMath;
 
 namespace SETestEnv
 {
-    public class TestBatteryBlock : TestFunctionalBlock<MyObjectBuilder_Battery>, IMyBatteryBlock
+    public class TestBatteryBlock : TestFunctionalBlock, IMyBatteryBlock
     {
         public TestBatteryBlock(string subtype = "TestBatteryBlock") : base(subtype) { }
 

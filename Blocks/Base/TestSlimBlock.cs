@@ -10,27 +10,27 @@ using VRageMath;
 
 namespace SETestEnv
 {
-    public class TestSlimBlock<T> : TestCubeBlock<T>, IMySlimBlock where T : MyObjectBuilder_Base
+    public class TestSlimBlock : TestCubeBlock, IMySlimBlock
     {
-        public TestSlimBlock(string subtype) : base(subtype) { }
+        public TestSlimBlock(string subtype = null) : base(subtype) { }
 
         public float AccumulatedDamage => throw new NotImplementedException();
 
         public float BuildLevelRatio => throw new NotImplementedException();
 
-        public float DamageRatio => throw new NotImplementedException();
+        public float DamageRatio => 2f - BuildIntegrity / MaxIntegrity;
 
         public IMyCubeBlock FatBlock => this;
 
-        public bool HasDeformation => throw new NotImplementedException();
+        public bool HasDeformation => false;
 
         public bool IsDestroyed => throw new NotImplementedException();
 
-        public bool IsFullIntegrity => throw new NotImplementedException();
+        public bool IsFullIntegrity => BuildIntegrity - CurrentDamage == MaxIntegrity;
 
         public bool IsFullyDismounted => throw new NotImplementedException();
 
-        public float MaxDeformation => throw new NotImplementedException();
+        public float MaxDeformation => 0;
 
         public bool ShowParts => throw new NotImplementedException();
 
@@ -41,6 +41,15 @@ namespace SETestEnv
         public Vector3 ColorMaskHSV => throw new NotImplementedException();
 
         public MyStringHash SkinSubtypeId => throw new NotImplementedException();
+
+        public float BuildIntegrity { get; set; }
+
+        public float CurrentDamage { get; set; }
+
+        public float MaxIntegrity { get; set; }
+
+        public override bool IsFunctional => (BuildIntegrity - CurrentDamage) / MaxIntegrity > 0.5;
+
 
         public void GetMissingComponents(Dictionary<string, int> addToDictionary)
         {

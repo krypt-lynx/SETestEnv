@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace SETestEnv
 {
-    public class TestUserControllableGun : TestFunctionalBlock<MyObjectBuilder_UserControllableGun>, IMyUserControllableGun
+    public class TestUserControllableGun : TestFunctionalBlock, IMyUserControllableGun
     {
-        public TestUserControllableGun(string subtype = "TestUserControllableGun") : base(subtype) { }
+        public TestUserControllableGun(string subtype = null) : base(subtype) { }
 
         public bool IsShooting => false;
 

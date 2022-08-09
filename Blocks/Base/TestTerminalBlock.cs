@@ -16,105 +16,17 @@ using Sandbox.Common.ObjectBuilders;
 
 namespace SETestEnv
 {
-    public abstract class TestProp : ITerminalProperty
+    public abstract class TestTerminalBlock : TestSlimBlock, IMyTerminalBlock, IMyTextSurfaceProvider
     {
-        public string Id { get; set; }
-
-        abstract public string TypeName { get; }
-    }
-
-    public class StubProp<TBlock, T> : TestProp, ITerminalProperty<T> where TBlock : class, IMyCubeBlock
-    {
-        public T Value { get; set; }
-        public Dictionary<TBlock, T> values = new Dictionary<TBlock, T>();
-
-        public StubProp(string id)
+        public TestTerminalBlock(string subtype = null) : base(subtype)
         {
-            this.Id = id;
+            InitProperty(new TestProp<IMyTerminalBlock, string>("Name",
+                (block) => block.CustomName,
+                (block, value) => block.CustomName = value
+                ));
         }
 
-        public override string TypeName => typeof(T).Name;
 
-        public T GetValue(IMyCubeBlock block)
-        {
-            values.TryGetValue(block as TBlock, out var value);
-            return value;
-        }
-
-        public void SetValue(IMyCubeBlock block, T value)
-        {
-            values[block as TBlock] = value;
-        }
-
-        public T GetDefaultValue(IMyCubeBlock block)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T GetMininum(IMyCubeBlock block)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T GetMinimum(IMyCubeBlock block)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T GetMaximum(IMyCubeBlock block)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class TestProp<TBlock, T> : TestProp, ITerminalProperty<T> where TBlock : class, IMyCubeBlock
-    {
-        Func<TBlock, T> getter;
-        Action<TBlock, T> setter;
-
-        public TestProp(string id, Func<TBlock, T> getter, Action<TBlock, T> setter)
-        {
-            this.Id = id;
-            this.getter = getter;
-            this.setter = setter;
-        }
-
-        public override string TypeName => typeof(T).Name;
-
-        public T GetValue(IMyCubeBlock block)
-        {
-            return getter(block as TBlock);
-        }
-
-        public void SetValue(IMyCubeBlock block, T value)
-        {
-            setter(block as TBlock, value);
-        }
-
-        public T GetDefaultValue(IMyCubeBlock block)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T GetMininum(IMyCubeBlock block)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T GetMinimum(IMyCubeBlock block)
-        {
-            throw new NotImplementedException();
-        }
-
-        public T GetMaximum(IMyCubeBlock block)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-
-    public abstract class TestTerminalBlock<T> : TestSlimBlock<T>, IMyTerminalBlock, IMyTextSurfaceProvider where T : MyObjectBuilder_Base
-    {
         private Dictionary<string, TestProp> properties = new Dictionary<string, TestProp>();
         public void InitProperty(TestProp prop)
         {
@@ -130,22 +42,35 @@ namespace SETestEnv
 
             if (!properties.ContainsKey(id))
             {
-                properties[id] = new StubProp<TBlock, T>(id);
+                properties[id] = new DummyProp<TBlock, TValue>(id);
+            } 
+            else
+            {
+                Console.WriteLine($"trying to reinit property {id} of {this.GetType()} with value {value}, property is set to this value instead");
+                //((ITerminalProperty<TValue>)properties[id]).SetValue(this, value);
             }
 
             this.SetValue(id, value);
         }
 
-        public TestTerminalBlock(string subtype) : base(subtype)
+
+
+        private Dictionary<string, TestAction> actions = new Dictionary<string, TestAction>();
+
+        public void InitAction<TBlock>(TestAction<TBlock> action) where TBlock : class, IMyCubeBlock
         {
-            InitProperty(new TestProp<IMyTerminalBlock, string>("Name",
-                (block) => block.CustomName,
-                (block, value) => block.CustomName = value
-                ));
+            if (!actions.ContainsKey(action.Id))
+            {
+                actions[action.Id] = action;
+            }
+            else
+            {
+                Console.WriteLine($"reinitializing action {action.Id} of {this.GetType()}");
+            }
+
         }
 
         #region IMyTerminalBlock
-
 
 
         public bool CheckConnectionAllowed
@@ -183,13 +108,23 @@ namespace SETestEnv
         public void GetActions(List<ITerminalAction> resultList, Func<ITerminalAction, bool> collect = null)
         {
             resultList.Clear();
-            return;
-            throw new NotImplementedException();
+            foreach (var action in actions.Values)
+            {
+                if (collect?.Invoke(action) ?? true)
+                {
+                    resultList.Add(action);
+                }
+            }
         }
 
+        /// <summary>
+        /// Returns terminal action with id
+        /// </summary>
+        /// <param name="name">id</param>
+        /// <returns>terminal action</returns>
         public ITerminalAction GetActionWithName(string name)
         {
-            return new TestTerminalAction(name);
+            return actions[name];
         }
 
         public void GetProperties(List<ITerminalProperty> resultList, Func<ITerminalProperty, bool> collect = null)

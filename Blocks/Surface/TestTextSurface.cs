@@ -1,4 +1,4 @@
-﻿using Console_2;
+﻿using BufferizedConsole;
 using Sandbox.ModAPI.Ingame;
 using System;
 using System.Collections.Generic;
@@ -175,11 +175,11 @@ namespace SETestEnv
 
             Vector2I visible = (Vector2I)((SurfaceSize + new Vector2(1, 0)) / (new Vector2(25, 37) * Magic * FontSize));
 
-            ConsoleColor fg = Console2.ForegroundColor;
-            ConsoleColor bg = Console2.BackgroundColor;
+            ConsoleColor fg = BufConsole.ForegroundColor;
+            ConsoleColor bg = BufConsole.BackgroundColor;
 
-            Console2.ForegroundColor = ConsoleColor.Gray;
-            Console2.WriteLine("LCD:");
+            BufConsole.ForegroundColor = ConsoleColor.Gray;
+            BufConsole.WriteLine("LCD:");
 
 
             string[] lines = text.ToString().Split('\n').Select(x => x.Trim('\r')).ToArray();
@@ -190,46 +190,46 @@ namespace SETestEnv
                 string hiddenPart = line.Substring(Math.Min(line.Length, visible.X));
                 if (index < visible.Y || !DrawBounds)
                 {
-                    Console2.ForegroundColor = ConsoleColor.Cyan;
-                    Console2.BackgroundColor = ConsoleColor.Black;
+                    BufConsole.ForegroundColor = ConsoleColor.Cyan;
+                    BufConsole.BackgroundColor = ConsoleColor.Black;
                 }
                 else
                 {
-                    Console2.ForegroundColor = ConsoleColor.DarkBlue;
-                    Console2.BackgroundColor = ConsoleColor.DarkGray;
+                    BufConsole.ForegroundColor = ConsoleColor.DarkBlue;
+                    BufConsole.BackgroundColor = ConsoleColor.DarkGray;
                 }
                 if (visiblePart.Length != 0)
                 {
-                    Console2.Write(visiblePart);
+                    BufConsole.Write(visiblePart);
                 }
                 else
                 {
-                    Console2.Write(new String(' ', visible.X));
+                    BufConsole.Write(new String(' ', visible.X));
                 }
 
                 if (DrawBounds)
                 {
-                    Console2.ForegroundColor = ConsoleColor.DarkBlue;
-                    Console2.BackgroundColor = ConsoleColor.DarkGray;
+                    BufConsole.ForegroundColor = ConsoleColor.DarkBlue;
+                    BufConsole.BackgroundColor = ConsoleColor.DarkGray;
                 }
 
                 if (hiddenPart.Length > 0)
                 {
-                    Console2.Write(hiddenPart);
+                    BufConsole.Write(hiddenPart);
                 }
                 else
                 {
-                    Console2.CursorLeft = visible.X;
-                    Console2.Write(" ");
+                    BufConsole.CursorLeft = visible.X;
+                    BufConsole.Write(" ");
                 }
-                Console2.BackgroundColor = ConsoleColor.Black;
-                Console2.WriteLine();
+                BufConsole.BackgroundColor = ConsoleColor.Black;
+                BufConsole.WriteLine();
 
                 index++;
             }
 
-            Console2.ForegroundColor = fg;
-            Console2.BackgroundColor = bg;
+            BufConsole.ForegroundColor = fg;
+            BufConsole.BackgroundColor = bg;
 
             return true;
             //throw new NotImplementedException();

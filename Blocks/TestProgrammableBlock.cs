@@ -11,12 +11,18 @@ using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
 using VRageMath;
+using Sandbox.Common.ObjectBuilders;
 
 namespace SETestEnv
 {
-    public class TestProgrammableBlock : TestFunctionalBlock<MyObjectBuilder_Battery>, IMyProgrammableBlock
+    public class TestProgrammableBlock : TestFunctionalBlock, IMyProgrammableBlock, ISimulationElement
     {
-        public TestProgrammableBlock(string subtype = "TestProgrammableBlock") : base(subtype) { }
+        public TestProgrammableBlock(string subtype = null) : base(subtype) { }
+
+        public override Type GetObjectBuilderType()
+        {
+            return typeof(MyObjectBuilder_MyProgrammableBlock);
+        }
 
         public bool IsRunning { get; set; }
         public string TerminalRunArgument { get; set; }
@@ -24,6 +30,37 @@ namespace SETestEnv
         public bool TryRun(string argument)
         {
             throw new NotImplementedException();
+        }
+
+        public DeferredProgram Program;
+
+        ProgramLayer programLayer = null;
+
+        public void SimStart()
+        {
+            programLayer = new ProgramLayer(Program, 
+                this,
+                Universe.Echo,
+                new TestGridTerminalSystem(this, (TestCubeGrid)CubeGrid),
+                new TestIntergridCommunicationSystem(this.EntityId));
+            programLayer.InitializeProgram();
+        }
+
+        public void BeforeSimStep() { }
+        public void SimStep() {
+            string arg = "";
+            if (InputPipeline.HasValue())
+            {
+                arg = InputPipeline.Pop();
+            }
+            programLayer.RunMain(arg);
+        }
+
+        public void AfterSimStep() { }
+
+        public void SimEnd()
+        {
+            programLayer.Stop();
         }
     }
 

@@ -16,6 +16,10 @@ namespace SETestEnv
 
         public MyEntityComponentContainer Components => throw new NotImplementedException();
 
+        public void GenNewEntityId()
+        {
+            EntityId = IdRandom.NextLong() & 72057594037927935L;
+        }
         public long EntityId { get; private set; } = IdRandom.NextLong() & 72057594037927935L;
 
         public string Name => throw new NotImplementedException();

@@ -11,14 +11,14 @@ using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
 using VRageMath;
-using Console_2;
+using BufferizedConsole;
 using VRage.Utils;
 using Sandbox.Common.ObjectBuilders;
 
 namespace SETestEnv
 {
 
-    public class TestTextPanel : TestFunctionalBlock<MyObjectBuilder_TextPanel>, IMyTextPanel, IMyTextSurface
+    public class TestTextPanel : TestFunctionalBlock, IMyTextPanel, IMyTextSurface
     {
         public string CurrentlyShownImage { get; set; }
 
@@ -33,15 +33,14 @@ namespace SETestEnv
             { MyStringHash.GetOrCompute("Monospace").GetHashCode(), "Monospace" },
         };
 
-        public TestTextPanel(string subtype = "TestTextPanel") : base(subtype)
+        public TestTextPanel(string subtype = null) : base(subtype)
         {
             surfaceProvider.AddSurface(surface);
             
 
             InitProperty(new TestProp<IMyTextPanel, Int64>("Font",
                 block => MyStringHash.GetOrCompute(block.Font).GetHashCode(), (block, value) => {
-                    var val = (GetProperty("Font") as ITerminalProperty<Int64>).GetValue(this);
-                    fontHashMap.TryGetValue(val, out var fontName);
+                    fontHashMap.TryGetValue(value, out var fontName);
                     block.Font = fontName;
                 }
                 ));
@@ -63,9 +62,15 @@ namespace SETestEnv
 
         public string GetPublicText() => surface.GetText();
 
-        public bool WritePublicTitle(string value, bool append = false) => surface.WriteText(value, append);
+        string title;
 
-        public string GetPublicTitle() => surface.GetText();
+        public bool WritePublicTitle(string value, bool append = false)
+        {
+            title = append ? title + value : value;
+            return true;
+        }
+
+        public string GetPublicTitle() => title;
 
         public bool WritePrivateText(string value, bool append = false) => true;
 
@@ -73,10 +78,10 @@ namespace SETestEnv
 
         public bool WritePrivateTitle(string value, bool append = false) => true;
 
-        public string PrivateTitle
+        public string Title
         {
-            get => "";
-            set { }
+            get => title;
+            set => title = value;
         }
 
         public float FontSize
