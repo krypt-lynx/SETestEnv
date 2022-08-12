@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SETestEnv
 {
-    public class TestTextSurfaceProvider : IMyTextSurfaceProvider, ISimulationElement
+    public class TestTextSurfaceProvider : IMyTextSurfaceProvider, IEventPipeline
     {
         List<IMyTextSurface> surfaces = new List<IMyTextSurface>();
 
@@ -22,52 +22,9 @@ namespace SETestEnv
 
         public IMyTextSurface GetSurface(int index) => surfaces[index];
 
-        public void SimStart()
+        void IEventPipeline.Broadcast(SimulationEvent @event)
         {
-            foreach (var surface in surfaces)
-            {
-                (surface as TestTextSurface).SimStart();
-            }
-        }
-
-        public void SimEnd()
-        {
-            foreach (var surface in surfaces)
-            {
-                (surface as TestTextSurface).SimEnd();
-            }
-        }
-
-        public void BeforeSimStep()
-        {
-            foreach (var surface in surfaces)
-            {
-                (surface as TestTextSurface).BeforeSimStep();
-            }
-        }
-
-        public void SimStep()
-        {
-            foreach (var surface in surfaces)
-            {
-                (surface as TestTextSurface).SimStep();
-            }
-        }
-
-        public void AfterSimStep()
-        {
-            foreach (var surface in surfaces)
-            {
-                (surface as TestTextSurface).AfterSimStep();
-            }
-        }
-
-        public void SimSave()
-        {
-            foreach (var surface in surfaces)
-            {
-                (surface as TestTextSurface).SimSave();
-            }
+            surfaces.BroadcastEvent(@event);
         }
     }
 }

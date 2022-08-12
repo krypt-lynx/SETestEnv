@@ -20,15 +20,21 @@ namespace SETestEnv
         public static string Pop() => messages.Dequeue();
     }
 
-    public class Universe: ISimulationElement
+    public class Universe : IEventPipeline, ISimulationElement
     {
-        long univereseAge = 0;
+        List<ISimulationElement> Update1List = new List<ISimulationElement>();
+        List<ISimulationElement> Update10List = new List<ISimulationElement>();
+        List<ISimulationElement> Update100List = new List<ISimulationElement>();
+
+        static long age = 0;
 
         static Universe()
         {
             PatchStorage();
 
             InitObjectBuilders();
+
+            string test = null;
         }
 
         private static void InitObjectBuilders()
@@ -78,7 +84,7 @@ namespace SETestEnv
         }
 
         private void SimulationLoop()
-        {            
+        {
             universe.SimStart();
 
             bool stop = false;
@@ -106,8 +112,10 @@ namespace SETestEnv
                     InputPipeline.Push(arg);
                 }
 
+                age += 1;
+
                 universe.BeforeSimStep();
-                universe.SimStep();
+                universe.SimStep(UpdateType.None);
                 universe.AfterSimStep();
             }
 
@@ -145,53 +153,19 @@ namespace SETestEnv
         }
 
         ISimulationElement universe => this;
+        IEventPipeline pipeline => this;
 
-        void ISimulationElement.SimStart()
+        void ISimulationElement.SimStart() => pipeline.Broadcast(new SimulationEvent("Start", x => x.SimStart()));
+        void ISimulationElement.BeforeSimStep() => pipeline.Broadcast(new SimulationEvent("BeforeStep", x => x.BeforeSimStep()));
+        void ISimulationElement.SimStep(UpdateType updateType) => pipeline.Broadcast(new SimulationEvent("Step", x => x.SimStep(updateType)));
+        void ISimulationElement.AfterSimStep() => pipeline.Broadcast(new SimulationEvent("AfterStep", x => x.AfterSimStep()));
+        void ISimulationElement.SimEnd() => pipeline.Broadcast(new SimulationEvent("End", x => x.SimEnd()));
+        void ISimulationElement.SimSave() => pipeline.Broadcast(new SimulationEvent("Save", x => x.SimSave()));
+       
+        void IEventPipeline.Broadcast(SimulationEvent @event)
         {
-            foreach (var grid in CubeGrids)
-            {
-                (grid as ISimulationElement)?.SimStart();
-            }
-        }
-
-        void ISimulationElement.BeforeSimStep()
-        {
-            foreach (var grid in CubeGrids)
-            {
-                (grid as ISimulationElement)?.BeforeSimStep();
-            }
+            CubeGrids.BroadcastEvent(@event);
         }
 
-        void ISimulationElement.SimStep()
-        {
-            foreach (var grid in CubeGrids)
-            {
-                (grid as ISimulationElement)?.SimStep();
-            }
-        }
-
-        void ISimulationElement.AfterSimStep()
-        {
-            foreach (var grid in CubeGrids)
-            {
-                (grid as ISimulationElement)?.AfterSimStep();
-            }
-        }
-
-        void ISimulationElement.SimEnd()
-        {
-            foreach (var grid in CubeGrids)
-            {
-                (grid as ISimulationElement)?.SimEnd();
-            }
-        }
-        
-        void ISimulationElement.SimSave()
-        {
-            foreach (var grid in CubeGrids)
-            {
-                (grid as ISimulationElement)?.SimSave();
-            }
-        }
     }
 }

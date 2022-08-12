@@ -15,11 +15,8 @@ namespace SETestEnv
 {
     public class MyGridProgramSetStorage
     {
-        static bool ignoreNext = false;
-        public static void SetStorage_postfix(MyGridProgram __instance)
-        {
-            (__instance.Runtime as TestGridProgramRuntimeInfo)?.ProgramLayer.StorageDidChanged();
-        }
+        public static void SetStorage_postfix(MyGridProgram __instance) =>
+            (__instance.Runtime as TestGridProgramRuntimeInfo)?.ProgramLayer.StorageDidChanged();        
     }
 
     public abstract class DeferredProgram
@@ -35,7 +32,6 @@ namespace SETestEnv
 
     public class DeferredProgram<T>: DeferredProgram where T : MyGridProgram
     {
-
         public DeferredProgram(Action<IModApiGridProgram> customConfigurator = null) : base(customConfigurator) { }
 
         override public MyGridProgram Create(Action<IModApiGridProgram> initializer)
@@ -58,10 +54,9 @@ namespace SETestEnv
 
         public Action<string> Echo;
         public TestGridTerminalSystem GTS;
-        public TestIntergridCommunicationSystem IGS;
+        public TestIntergridCommunicationSystem IGC;
         public IMyProgrammableBlock Owner;
         public TestGridProgramRuntimeInfo Runtime;
-
 
         private IModApiGridProgram program;
 
@@ -70,12 +65,12 @@ namespace SETestEnv
             IMyProgrammableBlock Owner,
             Action<string> Echo,
             TestGridTerminalSystem GTS,
-            TestIntergridCommunicationSystem IGS)
+            TestIntergridCommunicationSystem IGC)
         {
             this.deferedProgram = deferedProgram;
             this.Echo = Echo;
             this.GTS = GTS;
-            this.IGS = IGS;
+            this.IGC = IGC;
             this.Owner = Owner;
         }
 
@@ -92,7 +87,7 @@ namespace SETestEnv
                 program.Echo = Echo;
                 program.Runtime = Runtime;
                 program.GridTerminalSystem = GTS;
-                program.IGC_ContextGetter = () => IGS;
+                program.IGC_ContextGetter = () => IGC;
                 program.Storage = LoadStorage();
             });
         }

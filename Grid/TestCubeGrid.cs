@@ -11,7 +11,7 @@ using VRageMath;
 
 namespace SETestEnv
 {
-    public class TestCubeGrid : IMyCubeGrid, ISimulationElement
+    public class TestCubeGrid : IMyCubeGrid, IEventPipeline
     {
         private List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
         public List<IMyTerminalBlock> Blocks
@@ -210,55 +210,8 @@ namespace SETestEnv
             throw new NotImplementedException();
         }
 
-
-
-        public void SimStart()
-        {
-            foreach (var block in Blocks)
-            {
-                (block as ISimulationElement)?.SimStart();
-            }
-        }
-
-        public void BeforeSimStep()
-        {
-            foreach (var block in Blocks)
-            {
-                (block as ISimulationElement)?.BeforeSimStep();
-            }
-        }
-
-        public void SimStep()
-        {
-            foreach (var block in Blocks)
-            {
-                (block as ISimulationElement)?.SimStep();
-            }
-        }
-
-        public void AfterSimStep()
-        {
-            foreach (var block in Blocks)
-            {
-                (block as ISimulationElement)?.AfterSimStep();
-            }
-        }
-
-        public void SimEnd()
-        {
-            foreach (var block in Blocks)
-            {
-                (block as ISimulationElement)?.SimEnd();
-            }
-        }
-
-        public void SimSave()
-        {
-            foreach (var block in Blocks)
-            {
-                (block as ISimulationElement)?.SimSave();
-            }
-        }
+        void IEventPipeline.Broadcast(SimulationEvent @event) => Blocks.BroadcastEvent(@event);
+        
     }
 
 }

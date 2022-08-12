@@ -234,7 +234,7 @@ namespace SETestEnv
 
         public void BeforeSimStep() { }
 
-        public void SimStep() { }
+        public void SimStep(UpdateType updateType) { }
 
         public void AfterSimStep()
         {

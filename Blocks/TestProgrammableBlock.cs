@@ -15,7 +15,7 @@ using Sandbox.Common.ObjectBuilders;
 
 namespace SETestEnv
 {
-    public class TestProgrammableBlock : TestFunctionalBlock, IMyProgrammableBlock
+    public class TestProgrammableBlock : TestFunctionalBlock, IMyProgrammableBlock, ISimulationElement
     {
         public TestProgrammableBlock(string subtype = null) : base(subtype) { }
 
@@ -44,9 +44,8 @@ namespace SETestEnv
 
         ProgramLayer programLayer = null;
 
-        public override void SimStart()
+        public void SimStart()
         {
-            base.SimStart();
             if (Program != null)
             {
                 programLayer = new ProgramLayer(Program,
@@ -58,8 +57,7 @@ namespace SETestEnv
             }
         }
 
-        public override void SimStep() {
-            base.SimStep();
+        public void SimStep(UpdateType updateType) {
             if (programLayer != null)
             {
                 string arg = "";
@@ -71,10 +69,21 @@ namespace SETestEnv
             }
         }
 
-        public override void SimSave()
+        public void SimSave()
         {
-            base.SimSave();
             programLayer?.Save();
+        }
+
+        public void SimEnd() { }
+
+        public void BeforeSimStep() { }
+
+        public void AfterSimStep() { }
+
+        internal override void Broadcast(SimulationEvent @event)
+        {
+            base.Broadcast(@event);
+            this.ApplyEvent(@event);
         }
     }
 
