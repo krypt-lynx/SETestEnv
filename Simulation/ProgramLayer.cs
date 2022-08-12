@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -9,25 +10,35 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using IModApiGridProgram = Sandbox.ModAPI.IMyGridProgram;
+
 namespace SETestEnv
 {
+    public class MyGridProgramSetStorage
+    {
+        static bool ignoreNext = false;
+        public static void SetStorage_postfix(MyGridProgram __instance)
+        {
+            (__instance.Runtime as TestGridProgramRuntimeInfo)?.ProgramLayer.StorageDidChanged();
+        }
+    }
+
     public abstract class DeferredProgram
     {
-        protected Action<MyGridProgram> Configurator;
-        public DeferredProgram(Action<MyGridProgram> configurator = null)
+        protected Action<IModApiGridProgram> Configurator;
+        public DeferredProgram(Action<IModApiGridProgram> configurator = null)
         {
             Configurator = configurator;
         }
 
-        public abstract MyGridProgram Create(Action<MyGridProgram> initializer);
+        public abstract MyGridProgram Create(Action<IModApiGridProgram> initializer);
     }
 
     public class DeferredProgram<T>: DeferredProgram where T : MyGridProgram
     {
 
-        public DeferredProgram(Action<MyGridProgram> configurator = null) : base(configurator) { }
+        public DeferredProgram(Action<IModApiGridProgram> customConfigurator = null) : base(customConfigurator) { }
 
-        override public MyGridProgram Create(Action<MyGridProgram> initializer)
+        override public MyGridProgram Create(Action<IModApiGridProgram> initializer)
         {
             var program = (T)FormatterServices.GetUninitializedObject(typeof(T));
             ConstructorInfo constructor = typeof(T).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
@@ -52,7 +63,7 @@ namespace SETestEnv
         public TestGridProgramRuntimeInfo Runtime;
 
 
-        private MyGridProgram program;
+        private IModApiGridProgram program;
 
         public ProgramLayer(
             DeferredProgram deferedProgram,
@@ -68,20 +79,23 @@ namespace SETestEnv
             this.Owner = Owner;
         }
 
+        #region MyGridProgram lifecycle
+
         public void InitializeProgram()
         {
-            Runtime = new TestGridProgramRuntimeInfo();
+            Runtime = new TestGridProgramRuntimeInfo(this);
+
 
             program = deferedProgram.Create(program =>
             {
-                ((IModApiGridProgram)program).Me = Owner;
-                ((IModApiGridProgram)program).Echo = Echo;
-                ((IModApiGridProgram)program).Runtime = Runtime;
-                ((IModApiGridProgram)program).GridTerminalSystem = GTS;
-                ((IModApiGridProgram)program).IGC_ContextGetter = () => IGS;
+                program.Me = Owner;
+                program.Echo = Echo;
+                program.Runtime = Runtime;
+                program.GridTerminalSystem = GTS;
+                program.IGC_ContextGetter = () => IGS;
+                program.Storage = LoadStorage();
             });
         }
-
 
         public void RunMain(string argument, UpdateType? updateType = null)
         {
@@ -90,15 +104,14 @@ namespace SETestEnv
             Runtime.InitNewRun();
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            ((IModApiGridProgram)program).Main(argument, resolvedUpdateType);
-
+            program.Main(argument, resolvedUpdateType);
             stopwatch.Stop();
 
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write("execution finished in ");
-            if (stopwatch.Elapsed.TotalMilliseconds >= 3)
+            if (stopwatch.Elapsed.TotalMilliseconds >= 5)
             {
-                //BufConsole.ForegroundColor = ConsoleColor.Red;
+                Console.ForegroundColor = ConsoleColor.Red;
             }
             Console.Write($"{stopwatch.Elapsed.TotalMilliseconds / 1000f:0.#####}");
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -106,6 +119,51 @@ namespace SETestEnv
 
             Runtime.LastRunTimeMs = stopwatch.Elapsed.TotalMilliseconds;
         }
+
+        internal void Save()
+        {
+            program.Save();
+        }
+
+        #endregion
+
+        #region Storage handling
+
+        static string appRoot = AppDomain.CurrentDomain.BaseDirectory;
+        const string StorageFileFormat = "Storage_{0}.txt";
+        string StorageFile => string.Format(StorageFileFormat, Owner.EntityId);
+        // invoked by harmony patch
+        public void StorageDidChanged() 
+        {
+            if (program != null)
+            {
+                SaveStorage(program.Storage);
+            }
+        }
+
+        public void SaveStorage(string storage)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("saved Storage value:\n{0}", storage);
+            string path = Path.Combine(appRoot, StorageFile);
+            System.IO.File.WriteAllText(path, storage);
+        }
+
+        public string LoadStorage()
+        {
+            string path = Path.Combine(appRoot, StorageFile);
+            string storage = "";
+            if (File.Exists(path))
+            {
+                storage = File.ReadAllText(path);
+            }
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("loaded Storage value:\n{0}", storage);
+            return storage;
+        }
+
+        #endregion
+
 
         private UpdateType ResolveUpdateType(string argument, UpdateType? updateType)
         {
@@ -137,10 +195,6 @@ namespace SETestEnv
             return resolvedUpdateType;
         }
 
-        internal void Stop()
-        {
-            ((IModApiGridProgram)program).Save();
-        }
     }
 
 }

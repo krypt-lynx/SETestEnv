@@ -11,7 +11,6 @@ using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
 using VRageMath;
-using BufferizedConsole;
 using VRage.Utils;
 using Sandbox.Common.ObjectBuilders;
 
@@ -26,7 +25,7 @@ namespace SETestEnv
 
         public bool ShowText { get; set; }
 
-        public TestTextSurface surface = new TestTextSurface();
+        public TestTextSurface surface;
 
         static private Dictionary<long, string> fontHashMap = new Dictionary<long, string> {
             { MyStringHash.GetOrCompute("Debug").GetHashCode(), "Debug" },
@@ -35,8 +34,8 @@ namespace SETestEnv
 
         public TestTextPanel(string subtype = null) : base(subtype)
         {
-            surfaceProvider.AddSurface(surface);
-            
+            surface = new TestTextSurface("Text Panel");
+            surfaceProvider.AddSurface(surface);            
 
             InitProperty(new TestProp<IMyTextPanel, Int64>("Font",
                 block => MyStringHash.GetOrCompute(block.Font).GetHashCode(), (block, value) => {
@@ -78,10 +77,22 @@ namespace SETestEnv
 
         public bool WritePrivateTitle(string value, bool append = false) => true;
 
+        /// <summary>
+        /// Convinience property, not available on ingame interface
+        /// </summary>
         public string Title
         {
             get => title;
             set => title = value;
+        }
+
+        /// <summary>
+        /// Convinience property, not available on ingame interface
+        /// </summary>
+        public string Text
+        {
+            get => surface.GetText();
+            set => surface.WriteText(value);
         }
 
         public float FontSize

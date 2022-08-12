@@ -16,7 +16,7 @@ using Sandbox.Common.ObjectBuilders;
 
 namespace SETestEnv
 {
-    public abstract class TestTerminalBlock : TestSlimBlock, IMyTerminalBlock, IMyTextSurfaceProvider
+    public abstract class TestTerminalBlock : TestSlimBlock, IMyTerminalBlock, IMyTextSurfaceProvider, ISimulationElement
     {
         public TestTerminalBlock(string subtype = null) : base(subtype)
         {
@@ -257,6 +257,39 @@ namespace SETestEnv
 
         public IMyTextSurface GetSurface(int index) => surfaceProvider.GetSurface(index);
 
+        #endregion
+
+        #region ISimulationElement
+
+        public virtual void SimStart()
+        {
+            surfaceProvider.SimStart();
+        }
+
+        public virtual void SimEnd()
+        {
+            surfaceProvider.SimEnd();
+        }
+
+        public virtual void BeforeSimStep()
+        {
+            surfaceProvider.BeforeSimStep();
+        }
+
+        public virtual void SimStep()
+        {
+            surfaceProvider.SimStep();
+        }
+
+        public virtual void AfterSimStep()
+        {
+            surfaceProvider.AfterSimStep();
+        }
+
+        public virtual void SimSave()
+        {
+            surfaceProvider.SimSave();
+        }
         #endregion
     }
 }

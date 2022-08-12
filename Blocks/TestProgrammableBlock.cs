@@ -15,7 +15,7 @@ using Sandbox.Common.ObjectBuilders;
 
 namespace SETestEnv
 {
-    public class TestProgrammableBlock : TestFunctionalBlock, IMyProgrammableBlock, ISimulationElement
+    public class TestProgrammableBlock : TestFunctionalBlock, IMyProgrammableBlock
     {
         public TestProgrammableBlock(string subtype = null) : base(subtype) { }
 
@@ -29,38 +29,52 @@ namespace SETestEnv
 
         public bool TryRun(string argument)
         {
-            throw new NotImplementedException();
+            if (programLayer != null)
+            {
+                programLayer.RunMain(argument, UpdateType.Script);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public DeferredProgram Program;
 
         ProgramLayer programLayer = null;
 
-        public void SimStart()
+        public override void SimStart()
         {
-            programLayer = new ProgramLayer(Program, 
-                this,
-                Universe.Echo,
-                new TestGridTerminalSystem(this, (TestCubeGrid)CubeGrid),
-                new TestIntergridCommunicationSystem(this.EntityId));
-            programLayer.InitializeProgram();
-        }
-
-        public void BeforeSimStep() { }
-        public void SimStep() {
-            string arg = "";
-            if (InputPipeline.HasValue())
+            base.SimStart();
+            if (Program != null)
             {
-                arg = InputPipeline.Pop();
+                programLayer = new ProgramLayer(Program,
+                    this,
+                    Universe.Echo,
+                    new TestGridTerminalSystem(this, (TestCubeGrid)CubeGrid),
+                    new TestIntergridCommunicationSystem(this.EntityId));
+                programLayer.InitializeProgram();
             }
-            programLayer.RunMain(arg);
         }
 
-        public void AfterSimStep() { }
+        public override void SimStep() {
+            base.SimStep();
+            if (programLayer != null)
+            {
+                string arg = "";
+                if (InputPipeline.HasValue())
+                {
+                    arg = InputPipeline.Pop();
+                }
+                programLayer.RunMain(arg);
+            }
+        }
 
-        public void SimEnd()
+        public override void SimSave()
         {
-            programLayer.Stop();
+            base.SimSave();
+            programLayer?.Save();
         }
     }
 

@@ -251,6 +251,14 @@ namespace SETestEnv
                 (block as ISimulationElement)?.SimEnd();
             }
         }
+
+        public void SimSave()
+        {
+            foreach (var block in Blocks)
+            {
+                (block as ISimulationElement)?.SimSave();
+            }
+        }
     }
 
 }

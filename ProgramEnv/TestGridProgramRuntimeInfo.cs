@@ -1,5 +1,4 @@
-﻿using BufferizedConsole;
-using Sandbox.ModAPI.Ingame;
+﻿using Sandbox.ModAPI.Ingame;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +7,18 @@ using System.Threading.Tasks;
 
 namespace SETestEnv
 {
-
     public class TestGridProgramRuntimeInfo : IMyGridProgramRuntimeInfo
     {
+        public ProgramLayer ProgramLayer;
+
+        public TestGridProgramRuntimeInfo(ProgramLayer programLayer)
+        {
+            ProgramLayer = programLayer;
+        }
+
         private int simInstructionCount = 0;
+
+        private UpdateFrequency updateFrequency = UpdateFrequency.None;
 
         public void InitNewRun()
         {
@@ -60,8 +67,6 @@ namespace SETestEnv
             }
         }
 
-
-        private UpdateFrequency updateFrequency = UpdateFrequency.None;
         public UpdateFrequency UpdateFrequency
         {
             get
@@ -72,8 +77,8 @@ namespace SETestEnv
             set
             {
                 updateFrequency = value;
-                BufConsole.ForegroundColor = ConsoleColor.Yellow;
-                BufConsole.WriteLine("new UpdateFrequency value: {0}", value);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("new UpdateFrequency value: {0}", value);
             }
         }
     }

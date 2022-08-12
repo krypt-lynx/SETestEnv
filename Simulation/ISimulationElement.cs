@@ -14,5 +14,7 @@ namespace SETestEnv
         void BeforeSimStep();
         void SimStep();
         void AfterSimStep();
+
+        void SimSave();
     }
 }

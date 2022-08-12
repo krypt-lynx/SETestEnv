@@ -11,7 +11,6 @@ using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
 using VRageMath;
-using BufferizedConsole;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using Sandbox.Common.ObjectBuilders;
 

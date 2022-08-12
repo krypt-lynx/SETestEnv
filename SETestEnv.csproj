@@ -119,15 +119,17 @@
     <Compile Include="Blocks\Guns\TestLargeTurretBase.cs" />
     <Compile Include="Blocks\Base\TestSlimBlock.cs" />
     <Compile Include="Blocks\Guns\TestLargeInteriorTurret.cs" />
+    <Compile Include="Blocks\Surface\FontData\MonospacedFontDataProvider.cs" />
+    <Compile Include="Blocks\Surface\FontData\DebugFontDataProvider.cs" />
+    <Compile Include="Blocks\Surface\FontData\IFontDataProvider.cs" />
     <Compile Include="Blocks\Surface\TestTextSurface.cs" />
     <Compile Include="Blocks\Surface\TestTextSurfaceProvider.cs" />
     <Compile Include="Blocks\Guns\TestUserControllableGun.cs" />
-    <Compile Include="ProgramLayer.cs" />
-    <Compile Include="Helpers\BufferizedConsole.cs" />
+    <Compile Include="Presets\Minimalistic.cs" />
+    <Compile Include="Simulation\ProgramLayer.cs" />
     <Compile Include="Grid\TestBlockGroup.cs" />
     <Compile Include="Grid\TestCubeGrid.cs" />
     <Compile Include="Helpers\Extensions.cs" />
-    <Compile Include="Helpers\NativeConsole.cs" />
     <Compile Include="ProgramEnv\TestGridProgramRuntimeInfo.cs" />
     <Compile Include="ProgramEnv\TestGridTerminalSystem.cs" />
     <Compile Include="ProgramEnv\TestIntergridCommunicationSystem.cs" />
@@ -139,8 +141,7 @@
     <Compile Include="Blocks\Base\TestTerminalBlock.cs" />
     <Compile Include="Blocks\Base\TestEntity.cs" />
     <Compile Include="Simulation\ISimulationElement.cs" />
-    <Compile Include="TestGridProgram.cs" />
-    <Compile Include="Universe.cs" />
+    <Compile Include="Simulation\Universe.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
