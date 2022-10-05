@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI.Ingame;
@@ -14,7 +14,7 @@ namespace SETestEnv
     public class TestCubeGrid : IMyCubeGrid, IEventPipeline
     {
         private List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
-        public List<IMyTerminalBlock> Blocks
+        public IReadOnlyList<IMyTerminalBlock> Blocks
         {
             get
             {
@@ -22,10 +22,35 @@ namespace SETestEnv
             }
         }
 
-        public void RegisterBlock(TestTerminalBlock block)
+        private Dictionary<string, TestBlockGroup> groups = new Dictionary<string, TestBlockGroup>();
+        public IReadOnlyDictionary<string, TestBlockGroup> Groups
+        {
+            get
+            {
+                return groups;
+            }
+        }
+
+        public void AddGroup(TestBlockGroup group)
+        {
+            groups[group.Name] = group;
+        }
+
+        public void AddBlock(TestTerminalBlock block)
         {
             blocks.Add(block);
             block.OwnerGrid = this;
+        }
+
+        public int IndexOf(IMyTerminalBlock block)
+        {
+            return blocks.IndexOf(block);
+        }
+
+        public void RemoveBlock(IMyTerminalBlock block)
+        {
+            ((TestTerminalBlock)block).OwnerGrid = null;
+            blocks.Remove(block);
         }
 
         public MyEntityComponentContainer Components
@@ -40,7 +65,7 @@ namespace SETestEnv
         {
             get
             {
-                throw new NotImplementedException();
+                return 0; // todo:
             }
         }
 
@@ -56,7 +81,8 @@ namespace SETestEnv
         {
             get
             {
-                throw new NotImplementedException();
+                return MyCubeSize.Large; // todo:
+                // throw new NotImplementedException();
             }
         }
 
@@ -64,7 +90,7 @@ namespace SETestEnv
         {
             get
             {
-                throw new NotImplementedException();
+                return false; // todo:
             }
         }
 
@@ -72,7 +98,10 @@ namespace SETestEnv
         {
             get
             {
-                throw new NotImplementedException();
+                var x = Blocks.Aggregate(int.MinValue, (acc, b) => Math.Max(acc, b.Position.X));
+                var y = Blocks.Aggregate(int.MinValue, (acc, b) => Math.Max(acc, b.Position.Y));
+                var z = Blocks.Aggregate(int.MinValue, (acc, b) => Math.Max(acc, b.Position.Z));
+                return new Vector3I(x, y, z);
             }
         }
 
@@ -80,7 +109,10 @@ namespace SETestEnv
         {
             get
             {
-                throw new NotImplementedException();
+                var x = Blocks.Aggregate(int.MaxValue, (acc, b) => Math.Min(acc, b.Position.X));
+                var y = Blocks.Aggregate(int.MaxValue, (acc, b) => Math.Min(acc, b.Position.Y));
+                var z = Blocks.Aggregate(int.MaxValue, (acc, b) => Math.Min(acc, b.Position.Z));
+                return new Vector3I(x, y, z);
             }
         }
 
@@ -108,13 +140,7 @@ namespace SETestEnv
             }
         }
 
-        public BoundingSphereD WorldVolume
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public BoundingSphereD WorldVolume => new BoundingSphereD(Vector3D.Zero, 10);
 
         public BoundingSphereD WorldVolumeHr
         {

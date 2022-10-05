@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
+
 using IModApiGridProgram = Sandbox.ModAPI.IMyGridProgram;
 
 namespace SETestEnv
@@ -48,7 +48,7 @@ namespace SETestEnv
         }
     }
 
-    public class ProgramLayer 
+    public partial class ProgramLayer
     {
         private DeferredProgram deferedProgram;
 
@@ -76,6 +76,15 @@ namespace SETestEnv
 
         #region MyGridProgram lifecycle
 
+        long lastRun = 0;
+        public TimeSpan TimeSinceLastRun
+        {
+            get
+            {
+                return new TimeSpan((Universe.Age * 1000000 / 6) - (lastRun * 1000000 / 6));
+            }
+        }
+
         public void InitializeProgram()
         {
             Runtime = new TestGridProgramRuntimeInfo(this);
@@ -94,7 +103,7 @@ namespace SETestEnv
 
         public void RunMain(string argument, UpdateType? updateType = null)
         {
-            UpdateType resolvedUpdateType = ResolveUpdateType(argument, updateType);
+            UpdateType resolvedUpdateType = updateType ?? UpdateType.None; // ResolveUpdateType(argument, updateType);
 
             Runtime.InitNewRun();
 
@@ -111,13 +120,42 @@ namespace SETestEnv
             Console.Write($"{stopwatch.Elapsed.TotalMilliseconds / 1000f:0.#####}");
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine(" s");
-
             Runtime.LastRunTimeMs = stopwatch.Elapsed.TotalMilliseconds;
+            lastRun = Universe.Age;
         }
 
         internal void Save()
         {
             program.Save();
+        }
+
+        private UpdateFrequency updateFrequency = UpdateFrequency.None;
+
+        public void ClearUpdateOnce()
+        {
+            updateFrequency = updateFrequency & ~UpdateFrequency.Once;
+        }
+
+        public UpdateFrequency UpdateFrequency
+        {
+            get
+            {
+                return updateFrequency;
+            }
+            set
+            {
+                updateFrequency = value;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("new UpdateFrequency value: {0}", value);
+            }
+        }
+
+        void WriteUpdateFrequency()
+        {
+            Universe.SetUpdating1(this, UpdateFrequency.Contains(UpdateFrequency.Update1));
+            Universe.SetUpdating10(this, UpdateFrequency.Contains(UpdateFrequency.Update10));
+            Universe.SetUpdating100(this, UpdateFrequency.Contains(UpdateFrequency.Update100));
+            Universe.SetUpdatingOnce(this, UpdateFrequency.Contains(UpdateFrequency.Once));
         }
 
         #endregion
@@ -160,36 +198,65 @@ namespace SETestEnv
         #endregion
 
 
-        private UpdateType ResolveUpdateType(string argument, UpdateType? updateType)
+        //private UpdateType ResolveUpdateType(string argument, UpdateType? updateType)
+        //{
+        //    UpdateType resolvedUpdateType = UpdateType.None;
+
+        //    if (updateType.HasValue)
+        //    {
+        //        resolvedUpdateType = updateType.Value;
+        //    }
+        //    else
+        //    {
+        //        if (argument.Length > 0)
+        //        {
+        //            resolvedUpdateType = UpdateType.Terminal;
+        //        }
+        //        else
+        //        {
+        //            if (Runtime.UpdateFrequency.Contains(UpdateFrequency.Once))
+        //                resolvedUpdateType |= UpdateType.Once;
+        //            if (Runtime.UpdateFrequency.Contains(UpdateFrequency.Update1))
+        //                resolvedUpdateType |= UpdateType.Update1;
+        //            if (Runtime.UpdateFrequency.Contains(UpdateFrequency.Update10))
+        //                resolvedUpdateType |= UpdateType.Update10;
+        //            if (Runtime.UpdateFrequency.Contains(UpdateFrequency.Update100))
+        //                resolvedUpdateType |= UpdateType.Update100;
+        //        }
+        //    }
+
+        //    return resolvedUpdateType;
+        //}
+    }
+
+    public partial class ProgramLayer : ISimulationElement
+    {
+        public void SimStart() { }
+
+        public void SimStep(UpdateType updateType)
         {
-            UpdateType resolvedUpdateType = UpdateType.None;
-
-            if (updateType.HasValue)
+            string arg = "";
+            if (InputPipeline.HasValue())
             {
-                resolvedUpdateType = updateType.Value;
-            }
-            else
-            {
-                if (argument.Length > 0)
-                {
-                    resolvedUpdateType = UpdateType.Terminal;
-                }
-                else
-                {
-                    if (Runtime.UpdateFrequency.Contains(UpdateFrequency.Once))
-                        resolvedUpdateType |= UpdateType.Once;
-                    if (Runtime.UpdateFrequency.Contains(UpdateFrequency.Update1))
-                        resolvedUpdateType |= UpdateType.Update1;
-                    if (Runtime.UpdateFrequency.Contains(UpdateFrequency.Update10))
-                        resolvedUpdateType |= UpdateType.Update10;
-                    if (Runtime.UpdateFrequency.Contains(UpdateFrequency.Update100))
-                        resolvedUpdateType |= UpdateType.Update100;
-                }
+                updateType |= UpdateType.Terminal;
+                arg = InputPipeline.Pop();
             }
 
-            return resolvedUpdateType;
+            ClearUpdateOnce();
+            RunMain(arg, updateType);
         }
 
+        public void SimSave() => Save();
+
+        public void SimEnd() { }
+
+        public void BeforeSimStep() { }
+
+        public void AfterSimStep() {
+            WriteUpdateFrequency();
+        }
+
+        public bool IsPointOfInterest() => true;
     }
 
 }

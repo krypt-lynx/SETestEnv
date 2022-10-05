@@ -34,10 +34,10 @@ namespace SETestEnv
 
         public TestTextPanel(string subtype = null) : base(subtype)
         {
-            surface = new TestTextSurface("Text Panel");
+            surface = new TestTextSurface(new Vector2(512,512), new Vector2(512, 512), "Text Panel", "Text Panel", this);
             surfaceProvider.AddSurface(surface);            
 
-            InitProperty(new TestProp<IMyTextPanel, Int64>("Font",
+            InitProperty(new TestProp<IMyTextPanel, long>("Font",
                 block => MyStringHash.GetOrCompute(block.Font).GetHashCode(), (block, value) => {
                     fontHashMap.TryGetValue(value, out var fontName);
                     block.Font = fontName;

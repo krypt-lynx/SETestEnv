@@ -3,13 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SETestEnv
 {
     internal interface ISimulationElement
     {
-        void SimStart() { }
+        void SimStart();
         void SimEnd();
 
         void BeforeSimStep();
@@ -17,6 +17,8 @@ namespace SETestEnv
         void AfterSimStep();
 
         void SimSave();
+
+        bool IsPointOfInterest();
     }
 
     internal static class SimulationElement

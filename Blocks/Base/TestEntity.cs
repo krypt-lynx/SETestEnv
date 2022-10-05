@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 using VRage.Game.Components;
 using VRage.Game.ModAPI.Ingame;
 using VRage.Library.Utils;
@@ -11,7 +11,7 @@ using VRageMath;
 namespace SETestEnv
 {
     public class TestEntity : IMyEntity
-    {
+    {        
         private static MyRandom IdRandom = new MyRandom(123);
 
         public MyEntityComponentContainer Components => throw new NotImplementedException();
@@ -36,7 +36,7 @@ namespace SETestEnv
 
         public BoundingBoxD WorldAABBHr => BoundingBoxD.CreateInvalid();
 
-        public MatrixD WorldMatrix => throw new NotImplementedException();
+        public MatrixD WorldMatrix => MatrixD.Identity;
 
         public BoundingSphereD WorldVolume => throw new NotImplementedException();
 
@@ -52,10 +52,7 @@ namespace SETestEnv
             throw new NotImplementedException();
         }
 
-        public Vector3D GetPosition()
-        {
-            throw new NotImplementedException();
-        }
+        public Vector3D GetPosition() => Vector3D.Zero;
 
         public virtual string DisplayNameText { get; set; }
     }

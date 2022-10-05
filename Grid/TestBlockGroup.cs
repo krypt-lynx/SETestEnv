@@ -3,14 +3,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SETestEnv
 {
     public class TestBlockGroup : IMyBlockGroup
     {
         public string Name { get; set; }
-        public List<IMyTerminalBlock> Blocks { get; set; }
+        List<IMyTerminalBlock> Blocks { get; set; } = new List<IMyTerminalBlock>();
+
+        public TestBlockGroup(string name)
+        {
+            Name = name;
+        }
+
+        public void AddBlock(IMyTerminalBlock block)
+        {
+            Blocks.Add(block);
+        }
 
         public void GetBlocks(List<IMyTerminalBlock> blocks, Func<IMyTerminalBlock, bool> collect = null)
         {

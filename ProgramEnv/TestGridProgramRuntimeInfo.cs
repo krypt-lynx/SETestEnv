@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SETestEnv
 {
@@ -18,12 +18,9 @@ namespace SETestEnv
 
         private int simInstructionCount = 0;
 
-        private UpdateFrequency updateFrequency = UpdateFrequency.None;
-
         public void InitNewRun()
         {
             simInstructionCount = 0;
-            updateFrequency = updateFrequency & ~UpdateFrequency.Once;
         }
 
         public int CurrentInstructionCount
@@ -43,13 +40,7 @@ namespace SETestEnv
 
         public int MaxMethodCallCount => 50000;
 
-        public TimeSpan TimeSinceLastRun
-        {
-            get
-            {
-                return new TimeSpan(0, 0, 0, 1);
-            }
-        }
+        public TimeSpan TimeSinceLastRun => ProgramLayer.TimeSinceLastRun;
 
         public int MaxCallChainDepth
         {
@@ -69,17 +60,8 @@ namespace SETestEnv
 
         public UpdateFrequency UpdateFrequency
         {
-            get
-            {
-                return updateFrequency;
-            }
-
-            set
-            {
-                updateFrequency = value;
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("new UpdateFrequency value: {0}", value);
-            }
+            get => ProgramLayer.UpdateFrequency;
+            set => ProgramLayer.UpdateFrequency = value;
         }
     }
 

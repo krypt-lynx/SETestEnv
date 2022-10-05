@@ -4,18 +4,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 using VRage.Game.GUI.TextPanel;
 using VRageMath;
 
 namespace SETestEnv
 {
-    public class TestTextSurface : IMyTextSurface, ISimulationElement
+    public class TestTextSurface : IMyTextSurface, IEventPipeline
     {
-        public TestTextSurface(string name = null, string displayName = null)
+        EventListener listener = new EventListener();
+        WeakReference<IMyTerminalBlock> owner;
+
+        public TestTextSurface(
+            Vector2? textureSize = null,
+            Vector2? surfaceSize = null,
+            string name = null,
+            string displayName = null,
+            IMyTerminalBlock owner = null)
         {
             Name = name;
             DisplayName = displayName ?? name;
+            this.owner = new WeakReference<IMyTerminalBlock>(owner);
+
+            TextureSize = textureSize ?? new Vector2(512, 512);
+            SurfaceSize = surfaceSize ?? new Vector2(512, 512);
+
+            listener.onAfterSimStep = AfterSimStep;
         }
 
         public string CurrentlyShownImage => throw new NotImplementedException();
@@ -45,8 +59,8 @@ namespace SETestEnv
         public string Script { get; set; }
         public ContentType ContentType { get; set; } = ContentType.NONE;
 
-        public Vector2 SurfaceSize => new Vector2(512, 512);
-        public Vector2 TextureSize => new Vector2(512, 512);
+        public Vector2 SurfaceSize { get; private set; }
+        public Vector2 TextureSize { get; private set; }
         public bool PreserveAspectRatio { get; set; } = true;
         public float TextPadding { get; set; } = 0.2f;
         public Color ScriptBackgroundColor { get; set; }
@@ -82,7 +96,7 @@ namespace SETestEnv
 
         public MySpriteDrawFrame DrawFrame()
         {
-            throw new NotImplementedException();
+            return new MySpriteDrawFrame();
         }
 
         public void GetFonts(List<string> fonts)
@@ -103,7 +117,7 @@ namespace SETestEnv
 
         public void GetSprites(List<string> sprites)
         {
-            throw new NotImplementedException();
+            sprites.Clear();
         }
 
         public string GetText()
@@ -170,7 +184,9 @@ namespace SETestEnv
             ConsoleColor bg = Console.BackgroundColor;
 
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine($"Surface \"{Name}\":");
+            var msg = $"{owner?.GetTarget()?.CustomName ?? ""} -> {DisplayName}:";
+            Console.WriteLine(msg);
+            
 
 
             string[] lines = text.ToString().Split('\n').Select(x => x.Trim('\r')).ToArray();
@@ -228,13 +244,6 @@ namespace SETestEnv
         public bool WriteText(StringBuilder value, bool append = false) =>
             WriteText(value.ToString(), append);
 
-        public void SimStart() { }
-
-        public void SimEnd() { }
-
-        public void BeforeSimStep() { }
-
-        public void SimStep(UpdateType updateType) { }
 
         public void AfterSimStep()
         {
@@ -245,6 +254,11 @@ namespace SETestEnv
             }
         }
 
-        public void SimSave() { }
+        public bool IsPointOfInterest() => false;
+
+        void IEventPipeline.Broadcast(SimulationEvent @event)
+        {
+            listener.ApplyEvent(@event);
+        }
     }
 }

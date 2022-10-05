@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SETestEnv
 {
@@ -20,7 +20,7 @@ namespace SETestEnv
                 CustomData = "TestData",
                 Program = new DeferredProgram<TProgram>(),
             };
-            cubeGrid.RegisterBlock(pb);
+            cubeGrid.AddBlock(pb);
 
             var textPanel = new TestTextPanel
             {
@@ -32,7 +32,7 @@ namespace SETestEnv
                 BuildIntegrity = 7200,
                 MaxIntegrity = 7200
             };
-            cubeGrid.RegisterBlock(textPanel);
+            cubeGrid.AddBlock(textPanel);
 
             var battery = new TestBatteryBlock
             {
@@ -51,9 +51,9 @@ namespace SETestEnv
                 MaxIntegrity = 7200,
                 CurrentDamage = 200
             };
-            cubeGrid.RegisterBlock(battery);
+            cubeGrid.AddBlock(battery);
 
-            universe.RegisterCubeGrid(cubeGrid);
+            universe.AddCubeGrid(cubeGrid);
 
             return universe;
         }

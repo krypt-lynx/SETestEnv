@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 using VRage.Game;
 using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
@@ -22,11 +22,47 @@ namespace SETestEnv
 
     public class Universe : IEventPipeline, ISimulationElement
     {
-        List<ISimulationElement> Update1List = new List<ISimulationElement>();
-        List<ISimulationElement> Update10List = new List<ISimulationElement>();
-        List<ISimulationElement> Update100List = new List<ISimulationElement>();
+        static List<ISimulationElement> Update1List = new List<ISimulationElement>();
+        static List<ISimulationElement> Update10List = new List<ISimulationElement>();
+        static List<ISimulationElement> Update100List = new List<ISimulationElement>();
+        static List<ISimulationElement> UpdateOnceList = new List<ISimulationElement>();
 
-        static long age = 0;
+        private static void SetUpdatingX(ISimulationElement element, bool updating, List<ISimulationElement> list)
+        {
+            if (updating)
+            {
+                if (list.Contains(element))
+                {
+                    list.Add(element);
+                }
+            }
+            else
+            {
+                list.Remove(element);
+            }
+        }
+
+        private static bool GetUpdatingX(ISimulationElement element, List<ISimulationElement> list)
+        {
+            return list.Contains(element);
+        }
+
+        internal static void SetUpdating1(ISimulationElement element, bool updating) => 
+            SetUpdatingX(element, updating, Update1List);
+        internal static void SetUpdating10(ISimulationElement element, bool updating) =>
+            SetUpdatingX(element, updating, Update10List);
+        internal static void SetUpdating100(ISimulationElement element, bool updating) => 
+            SetUpdatingX(element, updating, Update100List);
+        internal static void SetUpdatingOnce(ISimulationElement element, bool updating) =>
+            SetUpdatingX(element, updating, UpdateOnceList);
+
+        internal static bool GetUpdating1(ISimulationElement element) => GetUpdatingX(element, Update1List);
+        internal static bool GetUpdating10(ISimulationElement element) => GetUpdatingX(element, Update10List);
+        internal static bool GetUpdating100(ISimulationElement element) => GetUpdatingX(element, Update100List);
+        internal static bool GetUpdatingOnce(ISimulationElement element) => GetUpdatingX(element, UpdateOnceList);
+
+
+        public static long Age = 0;
 
         static Universe()
         {
@@ -34,13 +70,14 @@ namespace SETestEnv
 
             InitObjectBuilders();
 
-            string test = null;
         }
 
         private static void InitObjectBuilders()
         {
+            SpaceEngineers.ObjectBuilders.ObjectBuilders.MyObjectBuilder_TargetDummyBlock test = new SpaceEngineers.ObjectBuilders.ObjectBuilders.MyObjectBuilder_TargetDummyBlock(); // force load linked assembly
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
+                //Console.WriteLine(assembly.FullName);
                 MyObjectBuilderSerializer.RegisterFromAssembly(assembly);
                 MyObjectBuilderType.RegisterFromAssembly(assembly, true);
                 //MyXmlSerializerManager.RegisterFromAssembly(assembly);
@@ -65,7 +102,7 @@ namespace SETestEnv
 
         public List<IMyCubeGrid> CubeGrids { get; } = new List<IMyCubeGrid>();
 
-        public void RegisterCubeGrid(TestCubeGrid cubeGrid)
+        public void AddCubeGrid(TestCubeGrid cubeGrid)
         {
             CubeGrids.Add(cubeGrid);
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -103,7 +140,7 @@ namespace SETestEnv
                             continue;
                         case ConsoleKey.Q:
                             stop = true;
-                            continue;
+                            continue;                     
                     }
                 }
 
@@ -112,10 +149,10 @@ namespace SETestEnv
                     InputPipeline.Push(arg);
                 }
 
-                age += 1;
+                Age += 1;
 
                 universe.BeforeSimStep();
-                universe.SimStep(UpdateType.None);
+                universe.SimStep(UpdateType.Update10);
                 universe.AfterSimStep();
             }
 
@@ -158,7 +195,11 @@ namespace SETestEnv
         void ISimulationElement.SimStart() => pipeline.Broadcast(new SimulationEvent("Start", x => x.SimStart()));
         void ISimulationElement.BeforeSimStep() => pipeline.Broadcast(new SimulationEvent("BeforeStep", x => x.BeforeSimStep()));
         void ISimulationElement.SimStep(UpdateType updateType) => pipeline.Broadcast(new SimulationEvent("Step", x => x.SimStep(updateType)));
-        void ISimulationElement.AfterSimStep() => pipeline.Broadcast(new SimulationEvent("AfterStep", x => x.AfterSimStep()));
+        void ISimulationElement.AfterSimStep() => pipeline.Broadcast(new SimulationEvent("AfterStep",
+            x => {
+                x.AfterSimStep();
+                }
+            ));
         void ISimulationElement.SimEnd() => pipeline.Broadcast(new SimulationEvent("End", x => x.SimEnd()));
         void ISimulationElement.SimSave() => pipeline.Broadcast(new SimulationEvent("Save", x => x.SimSave()));
        
@@ -167,5 +208,6 @@ namespace SETestEnv
             CubeGrids.BroadcastEvent(@event);
         }
 
+        bool ISimulationElement.IsPointOfInterest() => true;
     }
 }

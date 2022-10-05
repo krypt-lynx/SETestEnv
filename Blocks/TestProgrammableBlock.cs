@@ -17,7 +17,10 @@ namespace SETestEnv
 {
     public class TestProgrammableBlock : TestFunctionalBlock, IMyProgrammableBlock, ISimulationElement
     {
-        public TestProgrammableBlock(string subtype = null) : base(subtype) { }
+        public TestProgrammableBlock(string subtype = null) : base(subtype) {
+            surfaceProvider.AddSurface(new TestTextSurface(new Vector2(512, 512), new Vector2(512, 320), "Large Display", "CockpitScreen_02", this));
+            surfaceProvider.AddSurface(new TestTextSurface(new Vector2(512, 256), new Vector2(512, 204.8f), "Keyboard", "CockpitScreen_01", this));
+        }
 
         public override Type GetObjectBuilderType()
         {
@@ -52,27 +55,14 @@ namespace SETestEnv
                     this,
                     Universe.Echo,
                     new TestGridTerminalSystem(this, (TestCubeGrid)CubeGrid),
-                    new TestIntergridCommunicationSystem(this.EntityId));
+                    new TestIntergridCommunicationSystem(EntityId));
                 programLayer.InitializeProgram();
             }
         }
 
-        public void SimStep(UpdateType updateType) {
-            if (programLayer != null)
-            {
-                string arg = "";
-                if (InputPipeline.HasValue())
-                {
-                    arg = InputPipeline.Pop();
-                }
-                programLayer.RunMain(arg);
-            }
-        }
+        public void SimStep(UpdateType updateType) { }
 
-        public void SimSave()
-        {
-            programLayer?.Save();
-        }
+        public void SimSave() { }
 
         public void SimEnd() { }
 
@@ -84,7 +74,10 @@ namespace SETestEnv
         {
             base.Broadcast(@event);
             this.ApplyEvent(@event);
+            programLayer?.ApplyEvent(@event);
         }
+
+        public bool IsPointOfInterest() => true;
     }
 
 }

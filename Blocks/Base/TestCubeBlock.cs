@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 using VRage.Game;
 using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
@@ -81,13 +81,23 @@ namespace SETestEnv
 
         public virtual bool IsWorking => IsFunctional;
 
-        public int NumberInGrid => OwnerGrid.Blocks.IndexOf((IMyTerminalBlock)this);
+        public int NumberInGrid => OwnerGrid.IndexOf((IMyTerminalBlock)this);
 
         public MyBlockOrientation Orientation => MyBlockOrientation.Identity;
 
         public long OwnerId => 0; // Unowned
 
-        public Vector3I Position => new Vector3I(OwnerGrid.Blocks.IndexOf((IMyTerminalBlock)this), 0, 0);
+        public Vector3I Position
+        {
+            get
+            {
+                if (OwnerGrid == null)
+                {
+                    return Vector3I.Zero;
+                }
+                return new Vector3I(OwnerGrid.IndexOf((IMyTerminalBlock)this), 0, 0);
+            }
+        }
 
 
         public string DefinitionDisplayNameText => GetType().Name;
@@ -96,11 +106,11 @@ namespace SETestEnv
 
         public bool IsBeingHacked => throw new NotImplementedException();
 
-        public Vector3I Max => throw new NotImplementedException();
+        public Vector3I Max => Position;
 
-        public float Mass => 0;
+        public float Mass => throw new NotImplementedException();
 
-        public Vector3I Min => throw new NotImplementedException();
+        public Vector3I Min => Position;
 
         public string GetOwnerFactionTag()
         {

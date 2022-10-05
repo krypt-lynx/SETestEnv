@@ -123,6 +123,7 @@
     <Compile Include="Blocks\Surface\TestTextSurfaceProvider.cs" />
     <Compile Include="Blocks\Guns\TestUserControllableGun.cs" />
     <Compile Include="Presets\Minimalistic.cs" />
+    <Compile Include="Simulation\EventListener.cs" />
     <Compile Include="Simulation\IEventPipeline.cs" />
     <Compile Include="Simulation\ProgramLayer.cs" />
     <Compile Include="Grid\TestBlockGroup.cs" />

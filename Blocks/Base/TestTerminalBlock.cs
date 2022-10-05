@@ -20,10 +20,29 @@ namespace SETestEnv
     {
         public TestTerminalBlock(string subtype = null) : base(subtype)
         {
+            TestProp<IMyTerminalBlock, bool> testProp;
+
+            testProp = new TestProp<IMyTerminalBlock, bool>("ShowInTerminal",
+                (block) => block.ShowInTerminal,
+                (block, value) => block.ShowInTerminal = value);
+            InitProperty(testProp);
+            CreateActionsForProperty(testProp);
+
+            InitProperty(new TestProp<IMyTerminalBlock, bool>("ShowInInventory",
+                (block) => block.ShowInInventory,
+                (block, value) => block.ShowInInventory = value));
+            InitProperty(new TestProp<IMyTerminalBlock, bool>("ShowInToolbarConfig",
+                (block) => block.ShowInToolbarConfig,
+                (block, value) => block.ShowInToolbarConfig = value));
             InitProperty(new TestProp<IMyTerminalBlock, string>("Name",
                 (block) => block.CustomName,
-                (block, value) => block.CustomName = value
-                ));
+                (block, value) => block.CustomName = value));
+            InitProperty(new TestProp<IMyTerminalBlock, bool>("ShowOnHUD",
+                (block) => block.ShowOnHUD,
+                (block, value) => block.ShowOnHUD = value));
+            InitProperty(new TestProp<IMyTerminalBlock, string>("CustomData",
+                (block) => block.CustomData,
+                (block, value) => block.CustomData = value));
         }
 
 
@@ -66,6 +85,22 @@ namespace SETestEnv
                 Console.WriteLine($"reinitializing action {action.Id} of {this.GetType()}");
             }
 
+        }
+
+        public void CreateActionsForProperty<TBlock>(TestProp<TBlock, bool> prop) where TBlock : class, IMyCubeBlock
+        {
+            InitAction(new TestAction<TBlock>(prop.Id + "_On", prop.Id + " on", null, (block, args) =>
+            {
+                prop.SetValue(block, true);
+            }));
+            InitAction(new TestAction<TBlock>(prop.Id + "_Off", prop.Id + " off", null, (block, args) =>
+            {
+                prop.SetValue(block, false);
+            }));
+            InitAction(new TestAction<TBlock>(prop.Id + "", prop.Id + " switch", null, (block, args) =>
+            {
+                prop.SetValue(block, prop.GetValue(block));
+            }));
         }
 
         #region IMyTerminalBlock
@@ -234,7 +269,8 @@ namespace SETestEnv
 
         public bool IsSameConstructAs(IMyTerminalBlock other)
         {
-            throw new NotImplementedException();
+            return true;
+            //throw new NotImplementedException();
         }
 
         public bool HasPlayerAccess(long playerId, MyRelationsBetweenPlayerAndBlock defaultNoUser = MyRelationsBetweenPlayerAndBlock.NoOwnership)
