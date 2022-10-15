@@ -1,10 +1,11 @@
 ﻿using HarmonyLib;
 using Sandbox.ModAPI.Ingame;
+using SETestSurface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Threading;
 using VRage.Game;
 using VRage.Game.ModAPI.Ingame;
 using VRage.ObjectBuilders;
@@ -110,6 +111,16 @@ namespace SETestEnv
         }
 
         public void Start()
+        {
+            Thread universeThread = new Thread(() =>
+            {
+                StartInt();
+            });
+            universeThread.Start();
+            SurfaceVisualizer.Run();
+        }
+
+        void StartInt()
         {
             if (CubeGrids.Count == 0)
             {

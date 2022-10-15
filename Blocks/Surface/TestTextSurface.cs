@@ -1,5 +1,6 @@
 ﻿using Sandbox.ModAPI.Ingame;
 using SETestEnv.Surface.FontData;
+using SETestSurface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,9 @@ namespace SETestEnv
         EventListener listener = new EventListener();
         WeakReference<IMyTerminalBlock> owner;
 
+        static long nextId = 0;
+        public long Id { get; private set; }
+
         public TestTextSurface(
             Vector2? textureSize = null,
             Vector2? surfaceSize = null,
@@ -22,9 +26,12 @@ namespace SETestEnv
             string displayName = null,
             IMyTerminalBlock owner = null)
         {
+            Id = nextId++;
+
             Name = name;
             DisplayName = displayName ?? name;
             this.owner = new WeakReference<IMyTerminalBlock>(owner);
+
 
             TextureSize = textureSize ?? new Vector2(512, 512);
             SurfaceSize = surfaceSize ?? new Vector2(512, 512);
@@ -48,7 +55,7 @@ namespace SETestEnv
                 if (fonts.ContainsKey(value))
                 {
                     font = value;
-                } 
+                }
                 else
                 {
                     throw new Exception("Unsupported font name");
@@ -57,14 +64,23 @@ namespace SETestEnv
         }
         public TextAlignment Alignment { get; set; }
         public string Script { get; set; }
-        public ContentType ContentType { get; set; } = ContentType.NONE;
+        ContentType contentType = ContentType.NONE;
+
+        public ContentType ContentType {
+            get => contentType;
+            set
+            {
+                surfaceChanged = true;
+                contentType = value;
+            }
+        }
 
         public Vector2 SurfaceSize { get; private set; }
         public Vector2 TextureSize { get; private set; }
         public bool PreserveAspectRatio { get; set; } = true;
         public float TextPadding { get; set; } = 0.2f;
-        public Color ScriptBackgroundColor { get; set; }
-        public Color ScriptForegroundColor { get; set; }
+        public Color ScriptBackgroundColor { get; set; } = Color.Black;
+        public Color ScriptForegroundColor { get; set; } = Color.White;
 
         private StringBuilder text = new StringBuilder();
 
@@ -96,7 +112,7 @@ namespace SETestEnv
 
         public MySpriteDrawFrame DrawFrame()
         {
-            return new MySpriteDrawFrame();
+            return new MySpriteDrawFrame(DrawFrameInternal);
         }
 
         public void GetFonts(List<string> fonts)
@@ -151,15 +167,8 @@ namespace SETestEnv
             buffer.Append(text);
         }
 
-        public void RemoveImageFromSelection(string id, bool removeDuplicates = false)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveImagesFromSelection(List<string> ids, bool removeDuplicates = false)
-        {
-            throw new NotImplementedException();
-        }
+        public void RemoveImageFromSelection(string id, bool removeDuplicates = false) { }
+        public void RemoveImagesFromSelection(List<string> ids, bool removeDuplicates = false) { }
 
         public bool surfaceChanged = false;
         public bool WriteText(string value, bool append = false)
@@ -186,7 +195,7 @@ namespace SETestEnv
             Console.ForegroundColor = ConsoleColor.Gray;
             var msg = $"{owner?.GetTarget()?.CustomName ?? ""} -> {DisplayName}:";
             Console.WriteLine(msg);
-            
+
 
 
             string[] lines = text.ToString().Split('\n').Select(x => x.Trim('\r')).ToArray();
@@ -244,12 +253,61 @@ namespace SETestEnv
         public bool WriteText(StringBuilder value, bool append = false) =>
             WriteText(value.ToString(), append);
 
+        List<MySprite> sprites = new List<MySprite>();
+        private void DrawFrameInternal(MySpriteDrawFrame frame)
+        {
+            sprites.Clear();
+            frame.AddToList(sprites);
+            surfaceChanged = true;
+        }
 
+        bool showDebugSetOverlay = false;
+        public bool ShowDebugOverlay
+        {
+            get => showDebugSetOverlay;
+            set
+            {
+                showDebugSetOverlay = value;
+                SurfaceVisualizer.SetShowDebugOverlay(Id, showDebugSetOverlay);
+            }
+        }
+
+        ContentType renderedType = ContentType.NONE;
         public void AfterSimStep()
         {
             if (surfaceChanged)
             {
-                RenderText();
+                if (renderedType != contentType)
+                {
+                    switch (renderedType)
+                    {
+                        case ContentType.SCRIPT:
+                            SurfaceVisualizer.Close(Id);
+                            break;
+                    }
+
+                    switch (contentType)
+                    {
+                        case ContentType.SCRIPT:
+                            var name = $"{owner?.GetTarget()?.CustomName ?? ""} -> {DisplayName}:";
+                            SurfaceVisualizer.Open(Id, this, name);
+                            SurfaceVisualizer.SetShowDebugOverlay(Id, showDebugSetOverlay);
+                            break;
+                    }
+
+                }
+
+                switch (contentType)
+                {
+                    case ContentType.TEXT_AND_IMAGE:
+                        RenderText();
+                        break;
+                    case ContentType.SCRIPT:
+                        SurfaceVisualizer.Render(Id, sprites);
+                        break;
+                }
+
+                renderedType = contentType;
                 surfaceChanged = false;
             }
         }
