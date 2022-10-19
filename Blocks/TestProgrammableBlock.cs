@@ -18,8 +18,8 @@ namespace SETestEnv
     public class TestProgrammableBlock : TestFunctionalBlock, IMyProgrammableBlock, ISimulationElement
     {
         public TestProgrammableBlock(string subtype = null) : base(subtype) {
-            surfaceProvider.AddSurface(new TestTextSurface(new Vector2(512, 512), new Vector2(512, 320), "Large Display", "CockpitScreen_02", this));
-            surfaceProvider.AddSurface(new TestTextSurface(new Vector2(512, 256), new Vector2(512, 204.8f), "Keyboard", "CockpitScreen_01", this));
+            surfaceProvider.AddSurface(new TestTextSurface(new Vector2(512, 512), new Vector2(512, 320), "Large Display", "CockpitScreen_02", this) { FontSize = 10});
+            surfaceProvider.AddSurface(new TestTextSurface(new Vector2(512, 256), new Vector2(512, 204.8f), "Keyboard", "CockpitScreen_01", this) { FontSize = 10 });
         }
 
         public override Type GetObjectBuilderType()

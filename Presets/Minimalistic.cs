@@ -30,7 +30,8 @@ namespace SETestEnv
                 Title = "Working;Time Global Time: ;Cargo;Power;Inventory;Echo;Center << Damage >>;Damage;BlockCount",
 
                 BuildIntegrity = 7200,
-                MaxIntegrity = 7200
+                MaxIntegrity = 7200,
+                FontSize = 10
             };
             cubeGrid.AddBlock(textPanel);
 
