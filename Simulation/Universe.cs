@@ -69,7 +69,6 @@ namespace SETestEnv
             PatchStorage();
 
             InitObjectBuilders();
-
         }
 
         private static void InitObjectBuilders()

@@ -39,17 +39,17 @@ namespace SETestEnv
 
         protected Type ResolveObjectBuilderType()
         {
-            // general rule Keen's naming rule for object builders:
+            // general Keen's naming rule for object builders:
             // For IMy<Something> interfaces and My<Something> block you have 
             // MyObjectBuilder_<Something> builder in Sandbox.Common.ObjectBuilders namespace
 
             // But sometimes KeenSWH do not follow its own rules:
-            // MyLargeInteriorTurret - MyObjectBuilder_InteriorTurret
+            // IMyLargeInteriorTurret - MyObjectBuilder_InteriorTurret
             // IMyProgrammableBlock - MyObjectBuilder_MyProgrammableBlock
 
             // In such case you can override GetObjectBuilderType method and return proper MyObjectBuilder_Base type directly
 
-            // ... or you don't used "Test" prefix for your class
+            // ... or if you don't used "Test" prefix for your class
 
             Type obType = null;
 

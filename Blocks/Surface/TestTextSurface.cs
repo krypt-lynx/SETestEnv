@@ -34,9 +34,9 @@ namespace SETestEnv
 
         public string CurrentlyShownImage => throw new NotImplementedException();
 
-        public float FontSize { get; set; }
-        public Color FontColor { get; set; }
-        public Color BackgroundColor { get; set; }
+        public float FontSize { get; set; } = 1;
+        public Color FontColor { get; set; } = Color.White;
+        public Color BackgroundColor { get; set; } = Color.Black;
         public byte BackgroundAlpha { get; set; }
         public float ChangeInterval { get; set; }
 
